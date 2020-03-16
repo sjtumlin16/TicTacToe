@@ -10,6 +10,10 @@
 #include <cctype>
 using namespace std;
 
+void compSmartPlay(int &compRow, int &compCol, int board[3][3]);
+int winTieLoss(int board[3][3]);
+bool playerSim(int compRow, int compCol, int board[3][3]);
+
 void printBoard(int board[3][3])
 {
     int rowNum = 3;
@@ -31,27 +35,48 @@ void printBoard(int board[3][3])
     cout << endl;
 }
 
+int updateBoard(int row, int col, int player, int (&board)[3][3]) {
+	board[row][col] = player; 
+	printBoard(board);
+
+	return winTieLoss(board);
+}
+
 void playerInput(int &playerRow, int &playerColumn, int board[3][3])
 {
     do {
         cout << "What Row (0,1, or 2) would you like to place your 'O' in?" << endl;
         cin >> playerRow;
+
         do {
             cout << "What Column (0,1, or 2) would you like to place your 'O' in?" << endl;
             cin >> playerColumn;
         } while(playerColumn < 0 || playerColumn > 2);
+
     } while(playerRow < 0 || playerRow > 2 || board[playerRow][playerColumn]); //checks if it is not a "O" already exsists in the array
 
     cout << endl;
+}
+
+void incCoords(int& row, int& col) {
+	if (col == 2) {
+		row++;
+		col = 0;
+	}
+	else {
+		col++;
+	}
 }
 
 void compDumbPlay(int &compRow, int &compCol, int board[3][3])
 {
     do {
         compRow = rand() % 3; 
+
         do {
         	compCol = rand() % 3; 
         } while(compCol < 0 || compCol > 2);
+
     } while(compRow < 0 || compRow > 2 || board[compRow][compCol]); //checks if it is not a "O" already exsists in the array
 }
 
@@ -115,11 +140,135 @@ int winTieLoss(int board[3][3]) {
 	return check;
 }
 
-int updateBoard(int row, int col, int player, int (&board)[3][3]) {
-	board[row][col] = player; 
-	printBoard(board);
+void playerSmartPlay(int &compRow, int &compCol, int board[3][3])
+{
+	int boardCopy[3][3] = {board[3][3]};
 
-	return winTieLoss(board);
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			boardCopy[i][j] = board[i][j];
+		}
+	}
+
+	do {
+	    do {
+	        compRow = rand() % 3;
+
+	        do {
+	        	compCol = rand() % 3; 
+	        } while (compCol < 0 || compCol > 2);
+
+	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
+
+	} while (!playerSim(compRow, compCol, boardCopy));
+}
+
+bool playerSim(int compRow, int compCol, int board[3][3])
+{
+    /*int currRow = 0;
+    int currCol = 0;*/
+    int playerRow, playerCol;
+	int boardCopy[3][3] = {board[3][3]};
+	
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			boardCopy[i][j] = board[i][j];
+		}
+	}
+
+    updateBoard(compRow, compCol, 1, boardCopy);
+
+    // while (true) {
+		compSmartPlay(playerRow, playerCol, boardCopy);
+		if (updateBoard(playerRow, playerCol, 2, boardCopy)) {
+cout << "ouch";
+			return winTieLoss(boardCopy) != 1;
+		}
+		else {
+cout << "ouch";
+			return false;
+		}
+
+		playerSmartPlay(compRow, compCol, boardCopy);
+		
+		if (updateBoard(compRow, compCol, 1, boardCopy)) {
+cout << "ouch";
+			return winTieLoss(boardCopy) != 1;
+		}
+		else {
+cout << "ouch";
+			return false;
+		}
+	// }
+
+cout << "ouch";
+	return false;
+}
+
+bool compSim(int compRow, int compCol, int board[3][3])
+{
+    /*int currRow = 0;
+    int currCol = 0;*/
+    int playerRow, playerCol;
+	int boardCopy[3][3] = {board[3][3]};
+	
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			boardCopy[i][j] = board[i][j];
+		}
+	}
+
+    updateBoard(compRow, compCol, 2, boardCopy);
+
+    // while (true) {
+		playerSmartPlay(playerRow, playerCol, boardCopy);
+		if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
+cout << "ouch";
+			return winTieLoss(boardCopy) != 1;
+		}
+		else {
+cout << "ouch";
+			return false;
+		}
+
+		compSmartPlay(compRow, compCol, boardCopy);
+		
+		if (updateBoard(compRow, compCol, 2, boardCopy)) {
+cout << "ouch";
+			return winTieLoss(boardCopy) != 1;
+		}
+		else {
+cout << "ouch";
+			return false;
+		}
+	// }
+	
+cout << "ouch";
+
+	return false;
+}
+
+void compSmartPlay(int &compRow, int &compCol, int board[3][3])
+{
+	int boardCopy[3][3] = {board[3][3]};
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			boardCopy[i][j] = board[i][j];
+		}
+	}
+
+	do {
+	    do {
+	        compRow = rand() % 3;
+
+	        do {
+	        	compCol = rand() % 3; 
+	        } while (compCol < 0 || compCol > 2);
+
+	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
+
+	} while (!compSim(compRow, compCol, boardCopy));
 }
 
 int main()
