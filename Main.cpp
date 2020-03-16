@@ -133,12 +133,12 @@ int main()
 			break;
 		}
 
-		if (round) {
+		/*if (round) {
 			compSmartPlay(compRow, compCol, board);
 		}
-		else {
+		else {*/
 			compDumbPlay(compRow, compCol, board);			
-		}
+		/*}*/
 
 		if (updateBoard(compRow, compCol, 2, board)) {
 			break;
