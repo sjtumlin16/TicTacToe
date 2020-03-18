@@ -195,6 +195,7 @@ bool playerSim(int playerRow, int playerCol, int board[3][3])
 	return true;
 }
 
+/* /////////This sort of works but I'm testing out a new one that isn't recursive bc apperently I don't know how to do that.///////
 bool compSim(int compRow, int compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
@@ -209,26 +210,134 @@ bool compSim(int compRow, int compCol, int board[3][3])
 	cout << "compSim/compInit" << endl;
     if (updateBoard(compRow, compCol, 2, boardCopy)) {
     	return (winTieLoss(boardCopy) != 1);
-    }
+    }*/
 /*
 	playerSmartPlay(playerRow, playerCol, boardCopy);
 	cout << "compSim/player" << endl;
 	if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
 		return (winTieLoss(boardCopy) != 1);
-	}*/
+	}*//*
 
 	return true;
 }
-
-int compSmartPlay(int &compRow, int &compCol, int board[3][3])
+*/
+bool compSim(int compRow, int compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
-	int check;
+	int playerRow, playerCol;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
+	}
+
+	cout << "init update" << endl;
+	updateBoard(compRow, compCol, 2, boardCopy);
+
+	for (int k = 0; k < 3; k++) {
+		do {
+		    do {
+		        playerRow = rand() % 3;
+
+		        do {
+		        	playerCol = rand() % 3; 
+		        } while (playerCol < 0 || playerCol > 2);
+
+		    } while (playerRow < 0 || playerRow > 2 || boardCopy[playerRow][playerCol]);
+			cout << "player update" << endl;
+		    updateBoard(playerRow, playerCol, 1, boardCopy);
+
+			if (winTieLoss(boardCopy)) {
+				if (winTieLoss(boardCopy) != 1) {
+					return true;
+				}
+				else {
+					cout << "going" << endl;
+					goto label;
+				}
+			}
+
+		    do {
+		        compRow = rand() % 3;
+
+		        do {
+		        	compCol = rand() % 3; 
+		        } while (compCol < 0 || compCol > 2);
+
+		    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
+			cout << "comp update" << endl;
+		    updateBoard(compRow, compCol, 2, boardCopy);
+
+			if (winTieLoss(boardCopy)) {
+				if (winTieLoss(boardCopy) != 1) {
+					return true;
+				}
+				else {
+					cout << "going" << endl;
+					goto label;
+				}
+			}
+
+		} while (!winTieLoss(boardCopy));
+
+		label:
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				boardCopy[i][j] = board[i][j];
+			}
+		}
+
+	} 
+
+	return true;
+}
+
+bool playerCheck(int &compRow, int &compCol, int board[3][3]) {
+	int boardCopy[3][3] = {board[3][3]};
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			boardCopy[i][j] = board[i][j];
+		}
+	}
+
+	compRow = 0;
+	compCol = 0;
+
+	for (int i = 0; i < 9; i++) {
+		if (!boardCopy[compRow][compCol]) {
+			updateBoard(compRow, compCol, 1, boardCopy);
+		}
+
+		if (winTieLoss(boardCopy)) {
+			return true;
+		}
+
+		incCoords(compRow, compCol);
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				boardCopy[i][j] = board[i][j];
+			}
+		}		
+	}
+
+	return false;
+}
+
+int compSmartPlay(int &compRow, int &compCol, int board[3][3])
+{
+	int boardCopy[3][3] = {board[3][3]};
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			boardCopy[i][j] = board[i][j];
+		}
+	}
+
+	if (playerCheck(compRow, compCol, boardCopy)) {
+		return true;
 	}
 
 	do {
@@ -240,52 +349,67 @@ int compSmartPlay(int &compRow, int &compCol, int board[3][3])
 	        } while (compCol < 0 || compCol > 2);
 
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
-		check = compSim(compRow, compCol, boardCopy);
-	} while (!check);
+	    cout << "Running CompSim" << endl;
+	} while (!compSim(compRow, compCol, boardCopy));
 
-	return check;
+	return true;
 }
 
 int main()
-{
-	srand(time(NULL));
+{	
+	char token;
 
-	int board[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
-	int playerRow, playerCol, compRow, compCol, round = 0;
-	
-	while (true) {
+	do {
+		srand(time(NULL));
 
-		if (round) {
-			compSmartPlay(compRow, compCol, board);
+		int board[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+		int playerRow, playerCol, compRow, compCol, round = 0;
+
+		cout << "Computer goes first:" << endl << endl;
+
+		while (true) {
+
+			if (round) {
+				compSmartPlay(compRow, compCol, board);
+			}
+			else {
+				compDumbPlay(compRow, compCol, board);			
+			}
+			if (updateBoard(compRow, compCol, 2, board)) {
+				break;
+			}
+
+			playerInput(playerRow, playerCol, board);
+			if (updateBoard(playerRow, playerCol, 1, board)) {
+				break;
+			}
+
+			round++;
 		}
-		else {
-			compDumbPlay(compRow, compCol, board);			
-		}
-		if (updateBoard(compRow, compCol, 2, board)) {
+
+		switch (winTieLoss(board)) {
+			case 1: 
+				cout << "Congrats, you won!" << endl;
 			break;
-		}
-
-		playerInput(playerRow, playerCol, board);
-		if (updateBoard(playerRow, playerCol, 1, board)) {
+			case 2:
+				cout << "COMPUTERS ARE SUPERIOR" << endl;
 			break;
+			case 3:
+				cout << "Dang! It was a tie!" << endl;
+			break;
+			default:
+				cout << "FATAL ERROR" << endl;
 		}
 
-		round++;
-	}
+		cout << "So... Do you want to play again?" << endl;
+		do {
+			cout << "'Y' or 'N'" << endl;
+			cin >> token;
+			
+		} while (token != 'Y' && token != 'N');
+		cout << endl;
 
-	switch (winTieLoss(board)) {
-		case 1: 
-			cout << "Congrats, you won!";
-		break;
-		case 2:
-			cout << "COMPUTERS ARE SUPERIOR";
-		break;
-		case 3:
-			cout << "Dang! It was a tie!";
-		break;
-		default:
-			cout << "FATAL ERROR";
-	}
+	} while(token == 'Y');
 
     return 0;
 }
