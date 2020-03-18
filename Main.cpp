@@ -161,6 +161,8 @@ void playerSmartPlay(int &compRow, int &compCol, int board[3][3])
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
 
 	} while (!playerSim(compRow, compCol, boardCopy));
+
+	return;
 }
 
 bool playerSim(int compRow, int compCol, int board[3][3])
@@ -169,40 +171,45 @@ bool playerSim(int compRow, int compCol, int board[3][3])
     int currCol = 0;*/
     int playerRow, playerCol;
 	int boardCopy[3][3] = {board[3][3]};
+	bool test = false;
 	
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
-
+	cout << "playersim" << endl;
     updateBoard(compRow, compCol, 1, boardCopy);
+
+    if (winTieLoss(boardCopy)) {
+    	return true;
+    }
 
     // while (true) {
 		compSmartPlay(playerRow, playerCol, boardCopy);
 		if (updateBoard(playerRow, playerCol, 2, boardCopy)) {
 cout << "ouch";
-			return winTieLoss(boardCopy) != 1;
+			test = (winTieLoss(boardCopy) != 1);
 		}
 		else {
 cout << "ouch";
-			return false;
+			test = false;
 		}
 
 		playerSmartPlay(compRow, compCol, boardCopy);
 		
 		if (updateBoard(compRow, compCol, 1, boardCopy)) {
 cout << "ouch";
-			return winTieLoss(boardCopy) != 1;
+			test = (winTieLoss(boardCopy) != 1);
 		}
 		else {
 cout << "ouch";
-			return false;
+			test = false;
 		}
 	// }
 
 cout << "ouch";
-	return false;
+	return test;
 }
 
 bool compSim(int compRow, int compCol, int board[3][3])
@@ -211,41 +218,46 @@ bool compSim(int compRow, int compCol, int board[3][3])
     int currCol = 0;*/
     int playerRow, playerCol;
 	int boardCopy[3][3] = {board[3][3]};
+	bool test = false;
 	
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
-
+	cout << "compsim" << endl;
     updateBoard(compRow, compCol, 2, boardCopy);
+    
+    if (winTieLoss(boardCopy)) {
+    	return false;
+    }
 
     // while (true) {
 		playerSmartPlay(playerRow, playerCol, boardCopy);
 		if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
 cout << "ouch";
-			return winTieLoss(boardCopy) != 1;
+			test = (winTieLoss(boardCopy) != 1);
 		}
 		else {
 cout << "ouch";
-			return false;
+			test = false;
 		}
 
 		compSmartPlay(compRow, compCol, boardCopy);
 		
 		if (updateBoard(compRow, compCol, 2, boardCopy)) {
 cout << "ouch";
-			return winTieLoss(boardCopy) != 1;
+			test = (winTieLoss(boardCopy) != 1);
 		}
 		else {
 cout << "ouch";
-			return false;
+			test = false;
 		}
 	// }
 	
 cout << "ouch";
 
-	return false;
+	return test;
 }
 
 void compSmartPlay(int &compRow, int &compCol, int board[3][3])
@@ -269,6 +281,8 @@ void compSmartPlay(int &compRow, int &compCol, int board[3][3])
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
 
 	} while (!compSim(compRow, compCol, boardCopy));
+
+	return;
 }
 
 int main()
