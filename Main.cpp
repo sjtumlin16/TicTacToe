@@ -147,7 +147,7 @@ int winTieLoss(int board[3][3])
 int playerSmartPlay(int &compRow, int &compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
-	bool check;
+	int check;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -167,7 +167,7 @@ int playerSmartPlay(int &compRow, int &compCol, int board[3][3])
 		check = playerSim(compRow, compCol, boardCopy);
 	} while (check);
 
-	return winTieLoss(boardCopy);
+	return check;
 }
 
 bool playerSim(int playerRow, int playerCol, int board[3][3])
@@ -223,7 +223,7 @@ bool compSim(int compRow, int compCol, int board[3][3])
 int compSmartPlay(int &compRow, int &compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
-	bool check;
+	int check;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -243,7 +243,7 @@ int compSmartPlay(int &compRow, int &compCol, int board[3][3])
 		check = compSim(compRow, compCol, boardCopy);
 	} while (!check);
 
-	return winTieLoss(boardCopy);
+	return check;
 }
 
 int main()
@@ -254,10 +254,6 @@ int main()
 	int playerRow, playerCol, compRow, compCol, round = 0;
 	
 	while (true) {
-		playerInput(playerRow, playerCol, board);
-		if (updateBoard(playerRow, playerCol, 1, board)) {
-			break;
-		}
 
 		if (round) {
 			compSmartPlay(compRow, compCol, board);
@@ -265,8 +261,12 @@ int main()
 		else {
 			compDumbPlay(compRow, compCol, board);			
 		}
-
 		if (updateBoard(compRow, compCol, 2, board)) {
+			break;
+		}
+
+		playerInput(playerRow, playerCol, board);
+		if (updateBoard(playerRow, playerCol, 1, board)) {
 			break;
 		}
 
