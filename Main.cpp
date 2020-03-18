@@ -4,13 +4,14 @@
 #include <iomanip>
 #include <ctime> 
 #include <stdlib.h>
+#include <stdio.h>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <cctype>
 using namespace std;
 
-void compSmartPlay(int &compRow, int &compCol, int board[3][3]);
+int compSmartPlay(int &compRow, int &compCol, int board[3][3]);
 int winTieLoss(int board[3][3]);
 bool playerSim(int compRow, int compCol, int board[3][3]);
 
@@ -35,7 +36,8 @@ void printBoard(int board[3][3])
     cout << endl;
 }
 
-int updateBoard(int row, int col, int player, int (&board)[3][3]) {
+int updateBoard(int row, int col, int player, int (&board)[3][3]) 
+{
 	board[row][col] = player; 
 	printBoard(board);
 
@@ -58,7 +60,8 @@ void playerInput(int &playerRow, int &playerColumn, int board[3][3])
     cout << endl;
 }
 
-void incCoords(int& row, int& col) {
+void incCoords(int& row, int& col) 
+{
 	if (col == 2) {
 		row++;
 		col = 0;
@@ -80,7 +83,8 @@ void compDumbPlay(int &compRow, int &compCol, int board[3][3])
     } while(compRow < 0 || compRow > 2 || board[compRow][compCol]); //checks if it is not a "O" already exsists in the array
 }
 
-int winTieLoss(int board[3][3]) {
+int winTieLoss(int board[3][3]) 
+{
 	int check = 0;
 	int temp = 0;
 	int count = 0;
@@ -140,9 +144,10 @@ int winTieLoss(int board[3][3]) {
 	return check;
 }
 
-void playerSmartPlay(int &compRow, int &compCol, int board[3][3])
+int playerSmartPlay(int &compRow, int &compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
+	bool check;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -159,110 +164,66 @@ void playerSmartPlay(int &compRow, int &compCol, int board[3][3])
 	        } while (compCol < 0 || compCol > 2);
 
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
+		check = playerSim(compRow, compCol, boardCopy);
+	} while (check);
 
-	} while (!playerSim(compRow, compCol, boardCopy));
-
-	return;
+	return winTieLoss(boardCopy);
 }
 
-bool playerSim(int compRow, int compCol, int board[3][3])
+bool playerSim(int playerRow, int playerCol, int board[3][3])
 {
-    /*int currRow = 0;
-    int currCol = 0;*/
-    int playerRow, playerCol;
 	int boardCopy[3][3] = {board[3][3]};
-	bool test = false;
-	
+	int compRow, compCol;
+
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
-	cout << "playersim" << endl;
-    updateBoard(compRow, compCol, 1, boardCopy);
 
-    if (winTieLoss(boardCopy)) {
-    	return true;
+	cout << "playerSim/playerInit" << endl;
+    if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
+    	return (winTieLoss(boardCopy) != 1);
     }
+/*
+	compSmartPlay(compRow, compCol, boardCopy);
+	cout << "playerSim/comp" << endl;
+	if (updateBoard(compRow, compCol, 2, boardCopy)) {
+		return (winTieLoss(boardCopy) != 1);
+	}*/
 
-    // while (true) {
-		compSmartPlay(playerRow, playerCol, boardCopy);
-		if (updateBoard(playerRow, playerCol, 2, boardCopy)) {
-cout << "ouch";
-			test = (winTieLoss(boardCopy) != 1);
-		}
-		else {
-cout << "ouch";
-			test = false;
-		}
-
-		playerSmartPlay(compRow, compCol, boardCopy);
-		
-		if (updateBoard(compRow, compCol, 1, boardCopy)) {
-cout << "ouch";
-			test = (winTieLoss(boardCopy) != 1);
-		}
-		else {
-cout << "ouch";
-			test = false;
-		}
-	// }
-
-cout << "ouch";
-	return test;
+	return true;
 }
 
 bool compSim(int compRow, int compCol, int board[3][3])
 {
-    /*int currRow = 0;
-    int currCol = 0;*/
-    int playerRow, playerCol;
 	int boardCopy[3][3] = {board[3][3]};
-	bool test = false;
-	
+	int playerRow, playerCol;
+
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
-	cout << "compsim" << endl;
-    updateBoard(compRow, compCol, 2, boardCopy);
-    
-    if (winTieLoss(boardCopy)) {
-    	return false;
+
+	cout << "compSim/compInit" << endl;
+    if (updateBoard(compRow, compCol, 2, boardCopy)) {
+    	return (winTieLoss(boardCopy) != 1);
     }
+/*
+	playerSmartPlay(playerRow, playerCol, boardCopy);
+	cout << "compSim/player" << endl;
+	if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
+		return (winTieLoss(boardCopy) != 1);
+	}*/
 
-    // while (true) {
-		playerSmartPlay(playerRow, playerCol, boardCopy);
-		if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
-cout << "ouch";
-			test = (winTieLoss(boardCopy) != 1);
-		}
-		else {
-cout << "ouch";
-			test = false;
-		}
-
-		compSmartPlay(compRow, compCol, boardCopy);
-		
-		if (updateBoard(compRow, compCol, 2, boardCopy)) {
-cout << "ouch";
-			test = (winTieLoss(boardCopy) != 1);
-		}
-		else {
-cout << "ouch";
-			test = false;
-		}
-	// }
-	
-cout << "ouch";
-
-	return test;
+	return true;
 }
 
-void compSmartPlay(int &compRow, int &compCol, int board[3][3])
+int compSmartPlay(int &compRow, int &compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
+	bool check;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -279,14 +240,16 @@ void compSmartPlay(int &compRow, int &compCol, int board[3][3])
 	        } while (compCol < 0 || compCol > 2);
 
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
+		check = compSim(compRow, compCol, boardCopy);
+	} while (!check);
 
-	} while (!compSim(compRow, compCol, boardCopy));
-
-	return;
+	return winTieLoss(boardCopy);
 }
 
 int main()
 {
+	srand(time(NULL));
+
 	int board[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 	int playerRow, playerCol, compRow, compCol, round = 0;
 	
