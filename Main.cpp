@@ -19,7 +19,9 @@ void printBoard(int board[3][3])
 {
     int rowNum = 3;
     int columnNum = 3;
+    cout << "~|ABC~" << char(13) << endl;
     for(int n = 0; n < rowNum; n++) {
+    	cout << n + 1 << "|";
         for(int m = 0; m < columnNum; m++) {
             if(board[n][m] == 1) {
                 cout << "O";
@@ -36,24 +38,48 @@ void printBoard(int board[3][3])
     cout << endl;
 }
 
-int updateBoard(int row, int col, int player, int (&board)[3][3]) 
+int updateBoard(int row, int col, int player, int (&board)[3][3], bool print) 
 {
 	board[row][col] = player; 
-	printBoard(board);
+	if (print) {
+		printBoard(board);
+	}
 
 	return winTieLoss(board);
 }
 
 void playerInput(int &playerRow, int &playerColumn, int board[3][3])
 {
+	char playerColumnChar;
+
     do {
-        cout << "What Row (0,1, or 2) would you like to place your 'O' in?" << endl;
+        cout << "What Row (1, 2, or 3) would you like to place your 'O' in?" << endl;
         cin >> playerRow;
+        cout << endl;
+        playerRow--;
 
         do {
-            cout << "What Column (0,1, or 2) would you like to place your 'O' in?" << endl;
-            cin >> playerColumn;
+            cout << "What Column (A, B, or C) would you like to place your 'O' in?" << endl;
+            cin >> playerColumnChar;
+            cout << endl;
+            if (islower(playerColumnChar)) {
+            	playerColumnChar -= 32;
+            }
+            playerColumn = playerColumnChar;
+            playerColumn -= 65;
+
+            if (playerColumn < 0 || playerColumn > 2) {
+            	cout << "Slow down there buddy, that wasn't in the range we asked for. Do better next time. \nOr else..." << endl;
+            }
+
         } while(playerColumn < 0 || playerColumn > 2);
+
+        if (playerRow < 0 || playerRow > 2) {
+        	cout << "Whoa there, that wasn't in the range we asked for. We'll give you another chance." << endl;
+        }
+        else if (board[playerRow][playerColumn]) {
+        	cout << "HEY, watch it! There's already something there. Try again." << endl;
+        }
 
     } while(playerRow < 0 || playerRow > 2 || board[playerRow][playerColumn]); //checks if it is not a "O" already exsists in the array
 
@@ -181,14 +207,13 @@ bool playerSim(int playerRow, int playerCol, int board[3][3])
 		}
 	}
 
-	cout << "playerSim/playerInit" << endl;
-    if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
+    if (updateBoard(playerRow, playerCol, 1, boardCopy, false)) {
     	return (winTieLoss(boardCopy) != 1);
     }
 /*
 	compSmartPlay(compRow, compCol, boardCopy);
 	cout << "playerSim/comp" << endl;
-	if (updateBoard(compRow, compCol, 2, boardCopy)) {
+	if (updateBoard(compRow, compCol, 2, boardCopy, false)) {
 		return (winTieLoss(boardCopy) != 1);
 	}*/
 
@@ -208,13 +233,13 @@ bool compSim(int compRow, int compCol, int board[3][3])
 	}
 
 	cout << "compSim/compInit" << endl;
-    if (updateBoard(compRow, compCol, 2, boardCopy)) {
+    if (updateBoard(compRow, compCol, 2, boardCopy, false)) {
     	return (winTieLoss(boardCopy) != 1);
     }*/
 /*
 	playerSmartPlay(playerRow, playerCol, boardCopy);
 	cout << "compSim/player" << endl;
-	if (updateBoard(playerRow, playerCol, 1, boardCopy)) {
+	if (updateBoard(playerRow, playerCol, 1, boardCopy, false)) {
 		return (winTieLoss(boardCopy) != 1);
 	}*//*
 
@@ -232,8 +257,7 @@ bool compSim(int compRow, int compCol, int board[3][3])
 		}
 	}
 
-	cout << "init update" << endl;
-	updateBoard(compRow, compCol, 2, boardCopy);
+	updateBoard(compRow, compCol, 2, boardCopy, false);
 
 	for (int k = 0; k < 3; k++) {
 		do {
@@ -245,15 +269,13 @@ bool compSim(int compRow, int compCol, int board[3][3])
 		        } while (playerCol < 0 || playerCol > 2);
 
 		    } while (playerRow < 0 || playerRow > 2 || boardCopy[playerRow][playerCol]);
-			cout << "player update" << endl;
-		    updateBoard(playerRow, playerCol, 1, boardCopy);
+		    updateBoard(playerRow, playerCol, 1, boardCopy, false);
 
 			if (winTieLoss(boardCopy)) {
 				if (winTieLoss(boardCopy) != 1) {
 					return true;
 				}
 				else {
-					cout << "going" << endl;
 					goto label;
 				}
 			}
@@ -266,15 +288,13 @@ bool compSim(int compRow, int compCol, int board[3][3])
 		        } while (compCol < 0 || compCol > 2);
 
 		    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
-			cout << "comp update" << endl;
-		    updateBoard(compRow, compCol, 2, boardCopy);
+		    updateBoard(compRow, compCol, 2, boardCopy, false);
 
 			if (winTieLoss(boardCopy)) {
 				if (winTieLoss(boardCopy) != 1) {
 					return true;
 				}
 				else {
-					cout << "going" << endl;
 					goto label;
 				}
 			}
@@ -307,7 +327,7 @@ bool playerCheck(int &compRow, int &compCol, int board[3][3]) {
 
 	for (int i = 0; i < 9; i++) {
 		if (!boardCopy[compRow][compCol]) {
-			updateBoard(compRow, compCol, 1, boardCopy);
+			updateBoard(compRow, compCol, 1, boardCopy, false);
 		}
 
 		if (winTieLoss(boardCopy)) {
@@ -349,10 +369,30 @@ int compSmartPlay(int &compRow, int &compCol, int board[3][3])
 	        } while (compCol < 0 || compCol > 2);
 
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
-	    cout << "Running CompSim" << endl;
+
 	} while (!compSim(compRow, compCol, boardCopy));
 
 	return true;
+}
+
+string banter() {
+	int numPhrases = 10;
+	string phrases[numPhrases] = {
+		"Ooooo.... that'll hurt!",
+		"Good luck coming back from that...",
+		"oof",
+		"Hmmm. Interesting move.",
+		"Thinking you'll regret that...",
+		"Not sure about that move, chief.",
+		"Yikes!",
+		"May as well restart...",
+		"I'm at a loss for words...",
+		"*Crowd gasps*"
+	};
+
+	string line = phrases[rand() % numPhrases];
+
+	return line;
 }
 
 int main()
@@ -371,16 +411,18 @@ int main()
 
 			if (round) {
 				compSmartPlay(compRow, compCol, board);
+				cout << "Computer says:" << endl;
 			}
 			else {
 				compDumbPlay(compRow, compCol, board);			
 			}
-			if (updateBoard(compRow, compCol, 2, board)) {
+			if (updateBoard(compRow, compCol, 2, board, true)) {
 				break;
 			}
 
 			playerInput(playerRow, playerCol, board);
-			if (updateBoard(playerRow, playerCol, 1, board)) {
+			cout << banter() << endl;
+			if (updateBoard(playerRow, playerCol, 1, board, true)) {
 				break;
 			}
 
@@ -401,15 +443,15 @@ int main()
 				cout << "FATAL ERROR" << endl;
 		}
 
-		cout << "So... Do you want to play again?" << endl;
+		cout << "So...  Do you want to play again?" << endl;
 		do {
 			cout << "'Y' or 'N'" << endl;
 			cin >> token;
-			
-		} while (token != 'Y' && token != 'N');
+
+		} while (token != 'Y' && token != 'N' && token != 'y' && token != 'n');
 		cout << endl;
 
-	} while(token == 'Y');
+	} while(token == 'Y' || token == 'y');
 
     return 0;
 }
