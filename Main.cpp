@@ -13,13 +13,12 @@ using namespace std;
 
 int compSmartPlay(int &compRow, int &compCol, int board[3][3]);
 int winTieLoss(int board[3][3]);
-bool playerSim(int compRow, int compCol, int board[3][3]);
 
 void printBoard(int board[3][3])
 {
     int rowNum = 3;
     int columnNum = 3;
-    cout << "~|ABC~" << char(13) << endl;
+    cout << "~|ABC~" << endl;
     for(int n = 0; n < rowNum; n++) {
     	cout << n + 1 << "|";
         for(int m = 0; m < columnNum; m++) {
@@ -69,7 +68,8 @@ void playerInput(int &playerRow, int &playerColumn, int board[3][3])
             playerColumn -= 65;
 
             if (playerColumn < 0 || playerColumn > 2) {
-            	cout << "Slow down there buddy, that wasn't in the range we asked for. Do better next time. \nOr else..." << endl;
+            	cout << "Slow down there buddy, that wasn't in the range we asked for. ";
+            	cout << "Do better next time. \nOr else..." << endl;
             }
 
         } while(playerColumn < 0 || playerColumn > 2);
@@ -81,7 +81,7 @@ void playerInput(int &playerRow, int &playerColumn, int board[3][3])
         	cout << "HEY, watch it! There's already something there. Try again." << endl;
         }
 
-    } while(playerRow < 0 || playerRow > 2 || board[playerRow][playerColumn]); //checks if it is not a "O" already exsists in the array
+    } while(playerRow < 0 || playerRow > 2 || board[playerRow][playerColumn]);
 
     cout << endl;
 }
@@ -106,7 +106,7 @@ void compDumbPlay(int &compRow, int &compCol, int board[3][3])
         	compCol = rand() % 3; 
         } while(compCol < 0 || compCol > 2);
 
-    } while(compRow < 0 || compRow > 2 || board[compRow][compCol]); //checks if it is not a "O" already exsists in the array
+    } while(compRow < 0 || compRow > 2 || board[compRow][compCol]);
 }
 
 int winTieLoss(int board[3][3]) 
@@ -170,82 +170,6 @@ int winTieLoss(int board[3][3])
 	return check;
 }
 
-int playerSmartPlay(int &compRow, int &compCol, int board[3][3])
-{
-	int boardCopy[3][3] = {board[3][3]};
-	int check;
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			boardCopy[i][j] = board[i][j];
-		}
-	}
-
-	do {
-	    do {
-	        compRow = rand() % 3;
-
-	        do {
-	        	compCol = rand() % 3; 
-	        } while (compCol < 0 || compCol > 2);
-
-	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
-		check = playerSim(compRow, compCol, boardCopy);
-	} while (check);
-
-	return check;
-}
-
-bool playerSim(int playerRow, int playerCol, int board[3][3])
-{
-	int boardCopy[3][3] = {board[3][3]};
-	int compRow, compCol;
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			boardCopy[i][j] = board[i][j];
-		}
-	}
-
-    if (updateBoard(playerRow, playerCol, 1, boardCopy, false)) {
-    	return (winTieLoss(boardCopy) != 1);
-    }
-/*
-	compSmartPlay(compRow, compCol, boardCopy);
-	cout << "playerSim/comp" << endl;
-	if (updateBoard(compRow, compCol, 2, boardCopy, false)) {
-		return (winTieLoss(boardCopy) != 1);
-	}*/
-
-	return true;
-}
-
-/* /////////This sort of works but I'm testing out a new one that isn't recursive bc apperently I don't know how to do that.///////
-bool compSim(int compRow, int compCol, int board[3][3])
-{
-	int boardCopy[3][3] = {board[3][3]};
-	int playerRow, playerCol;
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			boardCopy[i][j] = board[i][j];
-		}
-	}
-
-	cout << "compSim/compInit" << endl;
-    if (updateBoard(compRow, compCol, 2, boardCopy, false)) {
-    	return (winTieLoss(boardCopy) != 1);
-    }*/
-/*
-	playerSmartPlay(playerRow, playerCol, boardCopy);
-	cout << "compSim/player" << endl;
-	if (updateBoard(playerRow, playerCol, 1, boardCopy, false)) {
-		return (winTieLoss(boardCopy) != 1);
-	}*//*
-
-	return true;
-}
-*/
 bool compSim(int compRow, int compCol, int board[3][3])
 {
 	int boardCopy[3][3] = {board[3][3]};
