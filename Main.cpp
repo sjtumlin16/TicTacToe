@@ -8,7 +8,7 @@ using namespace std;
 
 // Need prototypes for these funcs because of the way the fucncs call each other,
 // it wouldn't be possible to not
-int compSmartPlay(int &compRow, int &compCol, int board[3][3]);
+void compSmartPlay(int &compRow, int &compCol, int board[3][3]);
 int winTieLoss(int board[3][3]);
 
 // This func is used to print the board to let the player see it
@@ -139,13 +139,19 @@ void incCoords(int& row, int& col)
 {
 	// If the column is 2, we're at the end of the row
 	// so we increment the row and set the column to 0
-	if (col == 2) {
+	if (col >= 2) {
 		row++;
 		col = 0;
 	}
 	// Otherwise, just increment the column
 	else {
 		col++;
+	}
+
+	// Just as a failsafe, if the row is out of range, reset to 0,0
+	if (row >= 3) {
+		row = 0;
+		col = 0;
 	}
 }
 
@@ -155,22 +161,32 @@ void incCoords(int& row, int& col)
 // sure it's not placing over something else
 void compDumbPlay(int &compRow, int &compCol, int board[3][3])
 {
+	// These parallel arrays prioritize the most preferable spots on the board
+	// This function was originally used more than just the first play, that's why
+	// it includes all 9 spots
+	int rowChoices[9] = {1, 0, 0, 2, 2, 0, 1, 1, 2};
+	int colChoices[9] = {1, 0, 2, 0, 2, 1, 0, 2, 1};
+	// Set our index to 0
+	int j = 0;
 
 	// Outer loop: repeats once and then until the choice is in row range 
 	// AND doesn't place over something else	
     do {
-    	// Chooses a random number 0-2, inclusive
-        compRow = rand() % 3; 
+    	// Chooses the next number
+        compRow = rowChoices[j];
 
         // Inner loop: repeats once and then until the choice is in column range
         do {
-    		// Chooses a random number 0-2, inclusive
-        	compCol = rand() % 3; 
+    		// Chooses the next number
+        	compCol = colChoices[j];
+        	// Increment j for next time
+        	j++;
 
-        // Repeat until the choice is in the column range
+        // Just as a failsafe, make sure the column is in range
         } while(compCol < 0 || compCol > 2);
 
-    // Repeat until the choice is in the row range
+    // Just as a failsafe, make sure the column is in range and make 
+    // sure there's not something there yet
     } while(compRow < 0 || compRow > 2 || board[compRow][compCol]);
 }
 
@@ -367,29 +383,40 @@ bool compSim(int compRow, int compCol, int board[3][3])
 	return true;
 }
 
-bool playerCheck(int &compRow, int &compCol, int board[3][3]) {
-	int boardCopy[3][3] = {board[3][3]};
-
+// This func takes the vars to store the row and column, as well as the board
+// It will return true (use the returned spot or the player will win) or 
+// false (no immediate path to victory for player)
+bool playerCheck(int &compRow, int &compCol, int board[3][3]) 
+{
+	// Like previous functions, we will make a copy because we will be altering it
+	int boardCopy[3][3];
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
 
+	// We'll be checking each spot, so we start at 0,0
 	compRow = 0;
 	compCol = 0;
 
+	// We will repeat 9 times, once for each spot
 	for (int i = 0; i < 9; i++) {
+		//If there's not already something in our spot, update it with the player's value
 		if (!boardCopy[compRow][compCol]) {
 			updateBoard(compRow, compCol, 1, boardCopy, false);
 		}
 
+		// If there's a result, it means the player wins, we don't want that so we return true 
+		// which tells the calling function to use the values it returned for row and col
 		if (winTieLoss(boardCopy)) {
 			return true;
 		}
 
+		// Increment the spot
 		incCoords(compRow, compCol);
 
+		// Reset the board for next time
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				boardCopy[i][j] = board[i][j];
@@ -397,32 +424,46 @@ bool playerCheck(int &compRow, int &compCol, int board[3][3]) {
 		}		
 	}
 
+	// If we got here, there's no immediate path for the player, so we'll 
+	// return false and use a different method
 	return false;
 }
 
-bool compCheck(int &compRow, int &compCol, int board[3][3]) {
-	int boardCopy[3][3] = {board[3][3]};
-
+// This func will check to see if there's an immediate path for the computer to win
+// It takes the vars to store the row and column, as well as the board
+// It will return true (use the returned spot to win) or 
+// false (no immediate path to victory)
+bool compCheck(int &compRow, int &compCol, int board[3][3]) 
+{
+	// Like previous functions, we will make a copy because we will be altering it
+	int boardCopy[3][3];
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
 
+	// We'll be checking each spot, so we start at 0,0
 	compRow = 0;
 	compCol = 0;
 
+	// We will repeat 9 times, once for each spot
 	for (int i = 0; i < 9; i++) {
+		//If there's not already something in our spot, update it with the comp's value
 		if (!boardCopy[compRow][compCol]) {
 			updateBoard(compRow, compCol, 2, boardCopy, false);
 		}
 
+		// If there's a result, it means the computer wins, so we return true
+		// which tells the calling function to use the values it returned for row and col
 		if (winTieLoss(boardCopy)) {
 			return true;
 		}
 
+		// Increment the spot
 		incCoords(compRow, compCol);
 
+		// Reset the board for next time
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				boardCopy[i][j] = board[i][j];
@@ -430,40 +471,49 @@ bool compCheck(int &compRow, int &compCol, int board[3][3]) {
 		}		
 	}
 
+	// If we got here, there's no immediate, so we'll 
+	// return false and use a different method
 	return false;
 }
 
-int compSmartPlay(int &compRow, int &compCol, int board[3][3])
+// This func selects our approach for the play
+// Like usual it takes the vars for the row and column, ans well as the board
+// Returns nothing
+void compSmartPlay(int &compRow, int &compCol, int board[3][3])
 {
-	int boardCopy[3][3] = {board[3][3]};
-
+	// Like previous functions, we will make a copy because we will be altering it
+	int boardCopy[3][3];
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			boardCopy[i][j] = board[i][j];
 		}
 	}
 
+	// First see if we can quickly win
+	// If so, return with the column and row changed
 	if (compCheck(compRow, compCol, boardCopy)) {
-		return true;
+		return;
 	}
 
+	// Next, we'll see if there's any immediate threat from the player
+	// If so, return with the row and column set
 	if (playerCheck(compRow, compCol, boardCopy)) {
-		return true;
+		return;
 	}
 
+	// Next, we'll try to make a play that puts us on the path to victory
 	do {
 	    do {
 	        compRow = rand() % 3;
 
 	        do {
 	        	compCol = rand() % 3; 
+
 	        } while (compCol < 0 || compCol > 2);
 
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
 
 	} while (!compSim(compRow, compCol, boardCopy));
-
-	return true;
 }
 
 string banter() {
