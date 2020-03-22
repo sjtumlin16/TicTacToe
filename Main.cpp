@@ -116,7 +116,8 @@ void playerInput(int &playerRow, int &playerColumn, int board[3][3])
 
         // Error message if the row is out of range
         if (playerRow < 0 || playerRow > 2) {
-        	cout << "Whoa there, that wasn't in the range we asked for. We'll give you another chance." << endl;
+        	cout << "Whoa there, that wasn't in the range we asked for. ";
+        	cout << "We'll give you another chance." << endl;
         }
         // Error message if theres already something at that spot on the board
         // Else if because we don't want to get here if we'll be reading random vals
@@ -504,20 +505,31 @@ void compSmartPlay(int &compRow, int &compCol, int board[3][3])
 	// Next, we'll try to make a play that puts us on the path to victory
 	do {
 	    do {
+	    	// Pick a random number 0, 1, or 2 for the row
 	        compRow = rand() % 3;
 
 	        do {
+	        	// Pick a random number 0, 1, or 2 for the column
 	        	compCol = rand() % 3; 
 
+	        // Repeat the column picking until it's in range (just a backup to check range)
 	        } while (compCol < 0 || compCol > 2);
 
+	    // Check to make sure that the row choice in range and repeat until it picks 
+	    // a spot that's not already occupied
 	    } while (compRow < 0 || compRow > 2 || boardCopy[compRow][compCol]);
 
+	// Run the compSim function and repeat the above process until compSim says it's a good choice
 	} while (!compSim(compRow, compCol, boardCopy));
 }
 
+// This func is just for fun
+// It has no inputs, but when called it returns a string to taunt the 
+// player when they make their play
 string banter() {
+	// Size of the phrase string (number of strings)
 	int numPhrases = 10;
+	// These are all of the possible choices in an array
 	string phrases[numPhrases] = {
 		"Ooooo.... that'll hurt!",
 		"Good luck coming back from that...",
@@ -531,68 +543,103 @@ string banter() {
 		"*Crowd gasps*"
 	};
 
+	// Set the variable string equal to a random index of the phrases array
 	string line = phrases[rand() % numPhrases];
 
+	// Return the phrase
 	return line;
 }
 
 int main()
 {	
+	// This is the variable that the user uses to say if they want to play again
 	char token;
 
+	// This loop repeats once and then until the user says they don't want to play anymore
 	do {
+		// Set the seed to an arbitrary value to make the random generation more random
 		srand(time(NULL));
 
+		// Declare the board as a 3x3 array with all zeros
 		int board[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+		// These are the variables we will be using
 		int playerRow, playerCol, compRow, compCol, round = 0;
 
-		cout << "Computer goes first:" << endl << endl;
+		// Tell the player that the computer will be going first
+		cout << "Computer goes first:" << endl;
 
+		// We will always repeat until we hit a break statement 
 		while (true) {
-
+			// Round starts at 0, so if it's after the first round, use smartPlay
 			if (round) {
 				compSmartPlay(compRow, compCol, board);
+				// Let the user know that the following board is after the computer's choice
 				cout << "Computer says:" << endl;
 			}
 			else {
+				// Otherwise (the first round), use dumbPlay
 				compDumbPlay(compRow, compCol, board);			
 			}
+			// Update the board using the row and col selected above 
+			// updateBoard updates the variable, prints the board, 
+			// and returns a non-zero if there is a result
+			// If there's a result, we break the loop
 			if (updateBoard(compRow, compCol, 2, board, true)) {
 				break;
 			}
 
+			// Now it's the player's turn
+			// call playerInput which will request and take the user's choice
 			playerInput(playerRow, playerCol, board);
+			// Output a phrase 
 			cout << banter() << endl;
+			// Update the board using the row and col selected above 
+			// updateBoard updates the variable, prints the board, 
+			// and returns a non-zero if there is a result
+			// If there's a result, we break the loop
 			if (updateBoard(playerRow, playerCol, 1, board, true)) {
 				break;
 			}
 
+			// Add one to the round counter
 			round++;
 		}
 
+		// We got here, so there's a result
+		// Select a message based on the result
 		switch (winTieLoss(board)) {
+			// 1 means the player won
 			case 1: 
 				cout << "Congrats, you won!" << endl;
 			break;
+			// 2 means the computer won
 			case 2:
 				cout << "COMPUTERS ARE SUPERIOR" << endl;
 			break;
+			// 3 means it was a tie
 			case 3:
 				cout << "Dang! It was a tie!" << endl;
 			break;
+			// It should never be anything else
 			default:
 				cout << "FATAL ERROR" << endl;
 		}
 
+		// Ask if the user wants to play again
 		cout << "So...  Do you want to play again?" << endl;
+		// Repeat the following once and again until they enter a valid response
 		do {
+			// Give them the choices and take their input
 			cout << "'Y' or 'N'" << endl;
 			cin >> token;
 
+		// Keep asking until they give a valid input
 		} while (token != 'Y' && token != 'N' && token != 'y' && token != 'n');
 		cout << endl;
 
+	// Repeat the game as long as the user enters Y or y
 	} while(token == 'Y' || token == 'y');
 
+	// Done
     return 0;
 }
